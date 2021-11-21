@@ -15,7 +15,7 @@ export class Account extends JSONSerializable<Account.Data> {
       case CHAINS.TERRA: {
         const account = new MnemonicKey();
         this.accAddress = account.accAddress;
-        this.publicKey = account.accPubKey;
+        this.publicKey = account.publicKey.pubkeyAddress();
         this.privateKey = account.privateKey;
         this.mnemonic = account.mnemonic;
       }

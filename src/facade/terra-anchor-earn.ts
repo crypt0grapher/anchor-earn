@@ -7,7 +7,7 @@ import {
   MnemonicKey,
   Msg,
   RawKey,
-  StdTx,
+  Tx,
   TxInfo,
   Wallet,
 } from '@terra-money/terra.js';
@@ -202,7 +202,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
       throw new Error('Invalid Market');
     }
 
-    assertInput<Msg[], StdTx>(customSigner, customBroadcaster);
+    assertInput<Msg[], Tx>(customSigner, customBroadcaster);
 
     await this.assertUSTBalance(
       depositOption.currency,
@@ -245,7 +245,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
       throw new Error('Invalid zero amount');
     }
 
-    assertInput<Msg[], StdTx>(customSigner, customBroadcaster);
+    assertInput<Msg[], Tx>(customSigner, customBroadcaster);
 
     await this.assertAUSTBalance(
       withdrawOption.amount,
@@ -308,7 +308,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
     const customBroadcaster = options.customBroadcaster;
     const address = this.getAddress();
 
-    assertInput<Msg[], StdTx>(customSigner, customBroadcaster);
+    assertInput<Msg[], Tx>(customSigner, customBroadcaster);
 
     switch (options.currency) {
       case DENOMS.UST: {
@@ -422,7 +422,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
     const userCoins = await this._lcd.bank.balance(
       accAddress(getNativeBalanceOption.address),
     );
-    return userCoins.get(getNativeBalanceOption.currency);
+    return userCoins[0].get(getNativeBalanceOption.currency);
   }
 
   private async getExchangeRate(
@@ -713,7 +713,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
               status: STATUS.IN_PROGRESS,
               currency: mapCurrencyToUST(options.currency),
               amount: options.amount,
-              txFee: mapCoinToUST(signedTx.fee.amount),
+              txFee: mapCoinToUST(signedTx.auth_info.fee.amount),
               deductedTax: '0',
             } as Output);
           }),
@@ -723,7 +723,7 @@ export class TerraAnchorEarn implements AnchorEarnOperations {
         })
         .then((result) => isTxError(result)
             ? Promise.reject(
-                new Error(getTerraError(result.raw_log, result.code)),
+                new Error(getTerraError(result.raw_log, +result.code)),
               )
             : result.txhash,
         );
